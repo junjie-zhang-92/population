@@ -1,0 +1,55 @@
+cat 111.txt |while read id
+do
+mkdir ${id}_fastq_multx_output-1
+mkdir ${id}_fastq_multx_output-2
+mkdir ${id}_fastq_multx_output
+fastq-multx -B barcode.txt -d 1 -m 0 -b ${id}_1.fq.gz ${id}_2.fq.gz -o %.R1.fastq -o %.R2.fastq
+mv *.fastq ${id}_fastq_multx_output-1
+fastq-multx -B barcode.txt -d 1 -m 0 -b ${id}_2.fq.gz ${id}_1.fq.gz -o %.R1.fastq -o %.R2.fastq
+mv *.fastq ${id}_fastq_multx_output-2
+for i in `ls ${id}_fastq_multx_output-1/*.R1.fastq`; do a=${i/.R1.fastq/}; a=${a/${id}_fastq_multx_output-1\//}; echo "$a"; done > ${id}_sample.list
+for i in `cat ${id}_sample.list`; do echo "cat ${id}_fastq_multx_output-1/$i.R1.fastq ${id}_fastq_multx_output-2/$i.R2.fastq > ./${id}_fastq_multx_output/$i.R1.fastq"; done > ${id}_command.combine.R1.list
+for i in `cat ${id}_sample.list`; do echo "cat ${id}_fastq_multx_output-1/$i.R2.fastq ${id}_fastq_multx_output-2/$i.R1.fastq > ./${id}_fastq_multx_output/$i.R2.fastq"; done > ${id}_command.combine.R2.list
+sh ${id}_command.combine.R1.list
+sh ${id}_command.combine.R2.list
+done
+
+ls *.gz |while read id
+do
+echo $id |cut -d "_" -f 2 |while read i
+do
+mv $id ${i}_2.fq.gz
+done
+done
+
+
+#et28a分数据
+less 111.txt |while read aa
+do
+less bb.txt |while read bb
+do
+less 1/${bb}.txt |while read cc
+do
+cat ${aa}_fastq_multx_output/${cc}.R1.fastq >> et28a/${aa}${bb}_1.fastq
+cat ${aa}_fastq_multx_output/${cc}.R2.fastq >> et28a/${aa}${bb}_2.fastq
+done
+done
+done
+
+
+less 111.txt |while read aa
+do
+less bb.txt |while read bb
+do
+echo ${aa}${bb} >> 252.txt
+done
+done
+
+for aa in {1..14}
+do
+less 256.barcode.txt |while read bb
+do
+cat ${aa}_fastq_multx_output/${bb}W*.R1.fastq >>  pst-all/${aa}${bb}_1.fastq
+cat ${aa}_fastq_multx_output/${bb}W*.R2.fastq >>  pst-all/${aa}${bb}_2.fastq
+done
+done
