@@ -1,0 +1,18 @@
+#!/bin/bash      
+#SBATCH -J  zjg1   
+#SBATCH -N 1                
+#SBATCH -n 20                    
+#SBATCH --output=zjg1_%j.log     
+#SBATCH --error=zjg1_%j.log 
+#SBATCH --time=10-00:00:00
+vim 123.txt
+$ gatk CombineGVCFs -O cyr34.combined.snps.indels.gvcf.gz -R ../reference/GCA_025169535.1_ASM2516953v1_genomic.fna \
+ls *.snps.indels.gvcf.gz | while read id; do echo "-V $id" '\' >> 456.txt; done
+cat 123.txt 456.txt > combined.sh
+rm 123.txt 456.txt
+#to remove the last line's "\" from combined.sh
+#to convert from gvcf to vcf, and filter vcf
+gatk GenotypeGVCFs -O cyr34.genotype.snps.indels.vcf -R ../reference/GCA_025169535.1_ASM2516953v1_genomic.fna -V cyr34.combined.snps.indels.gvcf.gz
+vcftools --vcf cyr34.genotype.snps.indels.vcf --recode --recode-INFO-all --min-alleles 2 --max-alleles 2 --minQ 1000 --min-meanDP 20 --mac 3 --max-missing 0.85 --maf 0.05 --out cyr34.filtered.genotype.snps.indels
+vcftools --vcf cyr34.filtered.genotype.snps.indels.recode.vcf --recode --recode-INFO-all --remove-indels --out cyr34.snps.only
+vcftools --vcf cyr34.filtered.genotype.snps.indels.recode.vcf --keep-only-indels  --recode --recode-INFO-all --out cyr34.Indels.only
