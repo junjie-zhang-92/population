@@ -1,0 +1,4 @@
+# statistical counting
+bedtools intersect -a 111.gff -b 222.vcf -c > 12.txt 
+# output intersection 
+bedtools intersect -a 111.gff -b 222.vcf -wa -wb > 12.txt
