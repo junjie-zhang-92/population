@@ -1,0 +1,1 @@
+~/soft/VCF2Dis-1.47/bin/VCF2Dis -InPut DK09_11.1212.pt-pgt.filtered.snps.only.recode.addid.vcf -OutPut DK09_11_1212.pt-pgt.filtered.txt
