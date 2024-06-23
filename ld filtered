@@ -1,0 +1,14 @@
+#!/bin/bash      
+#SBATCH -J  dean 
+#SBATCH -N 1                
+#SBATCH -n 20                   
+#SBATCH --output=dean_%j.log     
+#SBATCH --error=dean_%j.log 
+#SBATCH --time=60-00:00:00
+#to add name of snps
+perl ~/soft/vcf_add.pl DK09_11.all212.pt.pgt.snps.only.recode.vcf DK09_11.all212.pt-pgt.snps.only.add.vcf
+plink --vcf DK09_11.all212.pt-pgt.snps.only.add.vcf --geno 0.1 --recode --make-bed --out DK09_11 --allow-extra-chr --double-id --autosome-num 94 
+plink --bfile DK09_11 --indep-pairwise 50 1 0.2 --out DK09_11.filterLD --allow-extra-chr --double-id --autosome-num 94
+plink --vcf DK09_11.all212.pt-pgt.snps.only.add.vcf --make-bed --extract DK09_11.filterLD.prune.in --out DK09_11.snps.prune --double-id --autosome-num 94 --allow-extra-chr
+awk -F "\t"  '{print $1"\t"$4}' DK09_11.snps.prune.bim > DK09_11.filter.LD.txt
+bcftools view -T DK09_11.filter.LD.txt DK09_11.all212.pt-pgt.snps.only.add.vcf -o DK09_11.all212.pt-pgt.snps.ld.add.vcf
