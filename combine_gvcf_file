@@ -5,6 +5,7 @@
 #SBATCH --output=zjg1_%j.log     
 #SBATCH --error=zjg1_%j.log 
 #SBATCH --time=10-00:00:00
+source /public/home/wangq/anaconda3/bin/activate
 vim 123.txt
 $ gatk CombineGVCFs -O cyr34.combined.snps.indels.gvcf.gz -R ../reference/GCA_025169535.1_ASM2516953v1_genomic.fna \
 ls *.snps.indels.gvcf.gz | while read id; do echo "-V $id" '\' >> 456.txt; done
