@@ -1,0 +1,5 @@
+#to convert from vcf to fasta and phy
+~/soft/vcf2phylip-2.6/vcf2phylip.py -i DK09_11.all212.pt-pgt.snps.ld.add.vcf -f -p 
+~/soft/raxml-ng --all --msa DK09_11.all212.pt-pgt.snps.ld.add.min4.fasta --model GTR+G --tree pars{10} --bs-trees 1000 --threads 20
+#or
+raxmlHPC-PTHREADS-AVX -f a -x 12345 -p 12345 -s DK09_11.all212.pt-pgt.snps.ld.add.min4.phy -T 20 -m GTRCAT -n DK09_11.220 -# 1000 
