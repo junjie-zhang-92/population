@@ -1,8 +1,15 @@
-PopLDdecay -InVCF DK09_11.1196.pt-pgt.filtered.snps.only.recode.addid.vcf -SubPop africa.txt -OutStat africa
-PopLDdecay -InVCF DK09_11.1196.pt-pgt.filtered.snps.only.recode.addid.vcf -SubPop asia.txt -OutStat asia
 
-$vim  deaw.list
-/mnt/d/desktop/1091_pst_out_mdist_fastme/ld/africa.stat.gz africa
-/mnt/d/desktop/1091_pst_out_mdist_fastme/ld/asia.stat.gz asia
+ls *.txt |while read id
+do
+PopLDdecay -InVCF DK09_11.1196.pt-pgt.filtered.snps.only.recode.addid.vcf -SubPop $id -OutStat ${id}.out
+done
+$ vim  deaw.list
+/users/wangq/wangq/pt-pgt/dk09-11-pt-pgt/1212/1196-ld/africa.txt.out.stat.gz Africa
+/users/wangq/wangq/pt-pgt/dk09-11-pt-pgt/1212/1196-ld/asia.txt.out.stat.gz Asia
+/users/wangq/wangq/pt-pgt/dk09-11-pt-pgt/1212/1196-ld/europe.txt.out.stat.gz Europe
+/users/wangq/wangq/pt-pgt/dk09-11-pt-pgt/1212/1196-ld/oceania.txt.out.stat.gz Oceania
+/users/wangq/wangq/pt-pgt/dk09-11-pt-pgt/1212/1196-ld/na.txt.out.stat.gz North_America
+/users/wangq/wangq/pt-pgt/dk09-11-pt-pgt/1212/1196-ld/sa.txt.out.stat.gz South_America
+Plot_MultiPop.pl -inList deaw.list -output draw-2 -bin1 500 -bin2 50000
 
-Plot_MultiPop.pl -inList deaw.list -output draw -bin1 500 -bin2 5000
+
