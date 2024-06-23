@@ -1,0 +1,16 @@
+
+#使用bi-allic
+vcftools --vcf combine.150.PT.snps.depth.recode.vcf --max-alleles 2 --min-alleles 2 --out combine.150.PT.biallelic --recode --recode-INFO-all
+
+#Dsuite使用前更改clib库
+export LD_LIBRARY_PATH=/public/home/wangq/anaconda3/pkgs/libstdcxx-ng-13.2.0-h7e041cc_3/lib:$LD_LIBRARY_PATH
+
+#Dsuite 1059.txt共两列，第一列是个体名，第二列是群体名
+Dsuite Dtrios cyr34.1059.snps.vcf 1059.txt -t 7.TreeMix.treeout -o sample
+
+#fbranch
+Dsuite Fbranch 7.TreeMix.treeout sample_tree.txt > sample.txt
+
+#fbranch plot
+python /public/home/wangq/soft/Dsuite/utils/dtools.py ./sample.txt ./7.TreeMix.treeout
+
