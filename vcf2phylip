@@ -1,0 +1,1 @@
+~/soft/vcf2phylip-2.6/vcf2phylip.py -i DK09_11.snps.only.1060.vcf -f -p 
