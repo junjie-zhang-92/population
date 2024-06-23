@@ -1,0 +1,1 @@
+vcftools --vcf et28a.maf0.05.snps.only.recode.vcf --extract-FORMAT-info GT --out et28a.maf0.05.snps.only.GT.vcf
