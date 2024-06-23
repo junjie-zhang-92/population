@@ -1,0 +1,50 @@
+#!/bin/bash      
+#SBATCH -J  zjg1   
+#SBATCH -N 1                
+#SBATCH -n 20                    
+#SBATCH --output=zjg1_%j.log     
+#SBATCH --error=zjg1_%j.log 
+#SBATCH --time=10-00:00:00
+#to load a conda environment
+source /public/home/wangq/anaconda3/bin/activate
+#to build file
+#mkdir 01-raw 02-clean 03-sam 04-bam 05-gatk 06-qualimap reference 
+#to build index
+bwa index GCA_025169535.1_ASM2516953v1_genomic.fna
+samtools faidx GCA_025169535.1_ASM2516953v1_genomic.fna
+gatk CreateSequenceDictionary -R GCA_025169535.1_ASM2516953v1_genomic.fna
+#to call snp
+ls *gz |cut -d"_" -f 1|sort -u|while read id
+	do
+trimmomatic PE -threads 48 -phred33 \
+../01-raw/${id}_R1.fq.gz ../01-raw/${id}_R2.fq.gz \
+../02-clean/${id}_1_paired.fastq.gz \
+../02-clean/${id}_1_unpaired.fastq.gz \
+../02-clean/${id}_2_paired.fastq.gz \
+../02-clean/${id}_2_unpaired.fastq.gz \
+ILLUMINACLIP:/public/home/wangq/anaconda3/share/trimmomatic-0.39-2/adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:10 TRAILING:10 SLIDINGWINDOW:4:15 MINLEN:50
+
+bwa mem -t 48 -M -R "@RG\tID:$id\tSM:$id\tPL:ILLUMINA" \
+../reference/GCA_025169535.1_ASM2516953v1_genomic.fna \
+../02-clean/${id}_1_paired.fastq.gz \
+../02-clean/${id}_2_paired.fastq.gz \
+>../03-sam/${id}.sam
+
+rm ../02-clean/${id}_1_paired.fastq.gz ../02-clean/${id}_1_unpaired.fastq.gz ../02-clean/${id}_2_paired.fastq.gz ../02-clean/${id}_2_unpaired.fastq.gz 
+samtools view -@ 48 -ubhSt ../reference/GCA_025169535.1_ASM2516953v1_genomic.fna.fai ../03-sam/${id}.sam > ../04-bam/${id}.bam
+picard CleanSam INPUT=../04-bam/${id}.bam OUTPUT=../04-bam/${id}.clean.bam VALIDATION_STRINGENCY=SILENT
+picard FixMateInformation INPUT=../04-bam/${id}.clean.bam OUTPUT=../04-bam/${id}.clean.fix.bam VALIDATION_STRINGENCY=SILENT
+picard SortSam INPUT=../04-bam/${id}.clean.fix.bam OUTPUT=../04-bam/${id}.clean.fix.sorted.bam SORT_ORDER=coordinate VALIDATION_STRINGENCY=LENIENT
+picard MarkDuplicates INPUT=../04-bam/${id}.clean.fix.sorted.bam OUTPUT=../04-bam/${id}.final.bam VALIDATION_STRINGENCY=LENIENT REMOVE_DUPLICATES=TRUE METRICS_FILE=../04-bam/DUP_METRICS.${id}.OUT MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=800
+samtools index ../04-bam/${id}.final.bam
+#qualimap bamqc --java-mem-size=32G -bam ../04-bam/${id}.final.bam -gff ../reference/GCA_025169535.1_ASM2516953v1_genomic.gff -outdir ../06-qualimap/ -outfile ${id} -outformat PDF
+rm ../03-sam/${id}.sam ../04-bam/${id}.bam ../04-bam/${id}.clean.bam ../04-bam/${id}.clean.fix.bam ../04-bam/${id}.clean.fix.sorted.bam 
+gatk --java-options "-Xmx96g" HaplotypeCaller -R ../reference/GCA_025169535.1_ASM2516953v1_genomic.fna -I ../04-bam/${id}.final.bam -O ../05-gatk/${id}.snps.indels.vcf.gz
+vcftools --min-alleles 2 --max-alleles 2 --minQ 1000 --recode --recode-INFO-all --gzvcf ../05-gatk/${id}.snps.indels.vcf.gz --out ../05-gatk/${id}.gold.snps.Indels
+gatk --java-options "-Xmx96g" IndexFeatureFile -I ../05-gatk/${id}.gold.snps.Indels.recode.vcf
+gatk --java-options "-Xmx96g" BaseRecalibrator -R ../reference/GCA_025169535.1_ASM2516953v1_genomic.fna -I ../04-bam/${id}.final.bam --known-sites ../05-gatk/${id}.gold.snps.Indels.recode.vcf -O ../05-gatk/${id}.recal_data.table
+gatk --java-options "-Xmx96g" ApplyBQSR -R ../reference/GCA_025169535.1_ASM2516953v1_genomic.fna -I ../04-bam/${id}.final.bam --bqsr-recal-file ../05-gatk/${id}.recal_data.table -O ../05-gatk/${id}.recal.bam
+gatk --java-options "-Xmx96g" ValidateSamFile -I ../05-gatk/${id}.recal.bam >> ../05-gatk/test.bam.txt
+gatk --java-options "-Xmx96g" HaplotypeCaller -R ../reference/GCA_025169535.1_ASM2516953v1_genomic.fna --emit-ref-confidence GVCF -I ../05-gatk/${id}.recal.bam -O ../05-gatk/${id}.snps.indels.gvcf.gz
+rm ../05-gatk/${id}.snps.indels.vcf.gz ../05-gatk/${id}.snps.indels.vcf.gz.tbi ../05-gatk/${id}.gold.snps.Indels.recode.vcf ../05-gatk/${id}.gold.snps.Indels.recode.vcf.idx ../05-gatk/${id}.recal_data.table ../05-gatk/${id}.recal.bam ../05-gatk/${id}.recal.bai
+	done
