@@ -1,0 +1,16 @@
+#!/bin/bash      
+#SBATCH -J  dean 
+#SBATCH -N 1                
+#SBATCH -n 20                   
+#SBATCH --output=dean_%j.log     
+#SBATCH --error=dean_%j.log 
+#SBATCH --time=60-00:00:00
+source /public/home/wangq/anaconda3/bin/activate
+# 1060.sort.bed include the sample order
+bcftools view -S 1060.sort.bed DK09_11.snps.only.g39.vcf -Ov >  DK09_11.snps.only.1060.g39.vcf
+plink --vcf DK09_11.snps.only.1060.g39.vcf --recode 12 --out DK09_11.snps.prune --autosome-num 94 --allow-extra-chr --double-id 
+for i in {1..10}
+do
+admixture --cv DK09_11.snps.prune.ped $i >> DK09_11.1060.g39.filter.log.txt
+done
+grep "CV error" DK09_11.1060.g39.filter.log.txt > DK09_11.1060.g39.ld.k_1to10
