@@ -1,0 +1,1 @@
+plink --vcf DK09_11.1196.pt-pgt.snps.only.addid.prune.vcf --threads 20 --pca 20 --out DK09_11.1196.pt-pgt.snps.only.addid.prune.pca --autosome-num 94 --allow-extra-chr --double-id 
