@@ -1,0 +1,30 @@
+#The sample names need to retain characters 7-10.
+$vim seqboot.par
+dk09-11.1120.164.phy
+R
+1000
+Y
+9
+$vim dnadist.par
+dk09-11.1120.164.1000.out
+M
+D
+1000
+2
+Y
+$vim neighbor.par
+dk09-11.1120.164.1000.mdist
+M
+1000
+9
+Y
+$vim consense.par
+nei.164.tree
+Y
+$vim phylip.sh
+seqboot < ./seqboot.par &&  mv ./outfile ./dk09-11.1120.164.1000.out
+dnadist < ./dnadist.par &&  mv ./outfile ./dk09-11.1120.164.1000.mdist
+neighbor < ./neighbor.par && mv  ./outfile ./nei.164.out && mv ./outtree ./nei.164.tree
+consense < ./consense.par && mv ./outfile ./cons.164.out && mv ./outtree ./164.constree
+
+sh phylip.sh
