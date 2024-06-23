@@ -1,0 +1,4 @@
+# missing rate of snp
+vcftools --vcf DK09_11.1196.pt-pgt.snps.only.addid.prune.vcf --missing-site --out sample_missing
+# missing rate of samples
+vcftools --vcf DK09_11.1120.pt-pgt.filtered.genotype.snps.recode.addid.vcf --missing-indv --out sample_missing
