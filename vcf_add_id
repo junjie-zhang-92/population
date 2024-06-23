@@ -1,0 +1,1 @@
+perl ~/soft/vcf_add.pl ${id}.snps.filter.vcf ${id}.snps.filter.add.vcf
