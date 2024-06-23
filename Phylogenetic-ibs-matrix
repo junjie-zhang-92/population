@@ -1,0 +1,40 @@
+#!/bin/bash      
+#SBATCH -J  dean 
+#SBATCH -N 1                
+#SBATCH -n 20                   
+#SBATCH --output=dean_%j.log     
+#SBATCH --error=dean_%j.log 
+#SBATCH --time=60-00:00:00
+source /public/home/wangq/anaconda3/bin/activate
+$vim pst.name.txt
+DK09_11
+$vim neighbor.par
+DK09_11.220.filter.1000.mdist
+M
+1000
+9
+Y
+$vim consense.par
+nei.filter.tree
+Y
+$vim phylip.sh
+neighbor < ./neighbor.par && mv  ./outfile ./nei.filter.out && mv ./outtree ./nei.filter.tree
+consense < ./consense.par && mv ./outfile ./cons.filter.out && mv ./outtree ./DK09_11.220.cons.tree
+$vim plink.sh
+less pst.name.txt |while read id
+do
+for ii in {1..1000}
+do
+shuf -n 220 220.bed > h${ii}.txt
+bcftools view -S h${ii}.txt DK09_11.all212.pt-pgt.snps.ld.add.vcf -Ov > ${id}.220.filter.${ii}.vcf
+plink --distance square 1-ibs --vcf ${id}.220.filter.${ii}.vcf --out ${id}.220.filter.${ii}.ibs --autosome-num 94 --allow-extra-chr --double-id 
+awk '{print $2"           "}' ${id}.220.filter.${ii}.ibs.mdist.id > ${id}.220.filter.${ii}.ibs.2.id
+paste -d '' ${id}.220.filter.${ii}.ibs.2.id ${id}.220.filter.${ii}.ibs.mdist  | sed '1i 220' > ${id}.220.filter.${ii}.ibs.2.mdist
+rm h${ii}.txt ${id}.220.filter.${ii}.vcf ${id}.220.filter.${ii}.ibs.nosex  ${id}.220.filter.${ii}.ibs.log ${id}.220.filter.${ii}.ibs.mdist.id ${id}.220.filter.${ii}.ibs.2.id ${id}.220.filter.${ii}.ibs.mdist
+done
+cat *.2.mdist > ${id}.220.filter.1000.mdist
+rm *.2.mdist
+sh phylip.sh
+done
+
+sh plink.sh
