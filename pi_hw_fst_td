@@ -1,0 +1,19 @@
+#!/bin/bash      
+#SBATCH -J  dean 
+#SBATCH -N 1                
+#SBATCH -n 20                   
+#SBATCH --output=dean_%j.log     
+#SBATCH --error=dean_%j.log 
+#SBATCH --time=60-00:00:00
+source /public/home/wangq/anaconda3/bin/activate
+
+ls *.txt |cut -d"_" -f 1|sort -u|while read id
+do
+vcftools --vcf DK09_11.1196.pt-pgt.snps.only.addid.prune.vcf --keep ${id}.txt --window-pi 10000 --window-pi-step 10000 --out ${id}.pi
+vcftools --vcf DK09_11.1196.pt-pgt.snps.only.addid.prune.vcf --keep ${id}.txt --TajimaD 10000  --out ${id}.td
+vcftools --vcf DK09_11.1196.pt-pgt.snps.only.addid.prune.vcf --keep ${id}.txt --hardy --out ${id}.hardy
+vcftools --vcf DK09_11.1196.pt-pgt.snps.only.addid.prune.vcf --keep ${id}.txt --het --out ${id}.het
+done
+
+#fst
+vcftools --vcf DK09_11.1196.pt-pgt.snps.only.addid.prune.vcf --weir-fst-pop A2.txt --weir-fst-pop A1.txt --fst-window-size 3000 –fst-window-step 100 --out Combine-2.Fst 
