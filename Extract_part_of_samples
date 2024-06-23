@@ -1,0 +1,1 @@
+bcftools view -S 1212.txt DK09_11.all.pt-pgt.genotype.snps.indels.vcf -Ov > DK09_11.1212.pt-pgt.genotype.snps.indels.vcf
