@@ -1,0 +1,8 @@
+PopLDdecay -InVCF DK09_11.1196.pt-pgt.filtered.snps.only.recode.addid.vcf -SubPop africa.txt -OutStat africa
+PopLDdecay -InVCF DK09_11.1196.pt-pgt.filtered.snps.only.recode.addid.vcf -SubPop asia.txt -OutStat asia
+
+$vim  deaw.list
+/mnt/d/desktop/1091_pst_out_mdist_fastme/ld/africa.stat.gz africa
+/mnt/d/desktop/1091_pst_out_mdist_fastme/ld/asia.stat.gz asia
+
+Plot_MultiPop.pl -inList deaw.list -output draw -bin1 500 -bin2 5000
