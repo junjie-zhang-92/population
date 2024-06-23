@@ -1,0 +1,12 @@
+# create map file
+# extract chr/id/phy of vcf
+cut -f 1,3,2 bgt.genotype.snps.indels.chr.246.snps.only.recode.vcf > dis.map
+# Remove lines starting with "#"
+sed -i '/^#/d' dis.map
+# 1cM/Mb=0.000001cM/bp  100cM/Mb=0.0001cM/bp
+awk '{ print $1" "$3" "$2*0.00005" "$2}' dis.map > bgt.50cm.map
+cat et28a.100cm.map | awk -F " " '{print $1}' |sort | uniq -c > 111.txt
+
+java -jar -Xmx96g ~/soft/beagle.22Jul22.46e.jar gt=bgt.genotype.snps.indels.chr.246.snps.only.recode.vcf out=bgt.10cm map=bgt.10cm.map
+java -Xmx96g -jar ~/soft/refined-ibd.17Jan20.102.jar gt=bgt.10cm.vcf.gz out=bgt.10cm map=bgt.10cm.map
+
